@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Manga Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .add-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .chapter-btn {
+            background: #007bff;
+            color: white;
+            margin-right: 5px;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        a {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📚 Manga Tracker</h1>
+
+    <div class="form">
+        <input type="text" id="title" placeholder="Manga Title">
+        <input type="number" id="chapter" placeholder="Current Chapter">
+        <input type="url" id="link" placeholder="Manga Link">
+        <button class="add-btn" onclick="addManga()">Add Manga</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Chapter</th>
+                <th>Link</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="mangaTable"></tbody>
+    </table>
+
+    <script>
+        let mangaList = JSON.parse(localStorage.getItem("mangaList")) || [];
+
+        function saveData() {
+            localStorage.setItem("mangaList", JSON.stringify(mangaList));
+        }
+
+        function renderTable() {
+            const table = document.getElementById("mangaTable");
+            table.innerHTML = "";
+
+            mangaList.forEach((manga, index) => {
+                table.innerHTML += `
+            <tr>
+                <td>${manga.title}</td>
+                <td>${manga.chapter}</td>
+                <td>
+                    <a href="${manga.link}" target="_blank">
+                        Open
+                    </a>
+                </td>
+                <td>
+                    <button class="chapter-btn"
+                        onclick="increaseChapter(${index})">
+                        +1 Chapter
+                    </button>
+
+                    <button class="delete-btn"
+                        onclick="deleteManga(${index})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+            });
+        }
+
+        function addManga() {
+            const title = document.getElementById("title").value;
+            const chapter = document.getElementById("chapter").value;
+            const link = document.getElementById("link").value;
+
+            if (!title || !chapter) {
+                alert("Please fill in title and chapter.");
+                return;
+            }
+
+            mangaList.push({
+                title,
+                chapter: Number(chapter),
+                link
+            });
+
+            saveData();
+            renderTable();
+
+            document.getElementById("title").value = "";
+            document.getElementById("chapter").value = "";
+            document.getElementById("link").value = "";
+        }
+
+        function increaseChapter(index) {
+            mangaList[index].chapter++;
+            saveData();
+            renderTable();
+        }
+
+        function deleteManga(index) {
+            mangaList.splice(index, 1);
+            saveData();
+            renderTable();
+        }
+
+        renderTable();
+    </script>
+
+</body>
+
+</html>
