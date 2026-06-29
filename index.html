@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manga Tracker</title>
+    <title>Manga Tracker Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -15,7 +15,6 @@
             --border: #e2e8f0;
         }
 
-        /* --- DARK MODE DEFINITION --- */
         [data-theme="dark"] {
             --bg: #0f172a;
             --card: #1e293b;
@@ -33,7 +32,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -104,9 +103,16 @@
             display: none !important;
         }
 
+        /* DEFAULT DESKTOP LAYOUT (Moved from inline to here) */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+        }
+
         .manga-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr auto;
             gap: 10px;
             padding: 12px;
             border-bottom: 1px solid var(--border);
@@ -198,23 +204,62 @@
             border-color: var(--primary);
             background: var(--bg);
         }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 900px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+                /* Switch to 1 column */
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            #nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .manga-row {
+                grid-template-columns: 1fr 1fr;
+                /* Card-like 2 columns on mobile */
+                gap: 10px;
+            }
+
+            /* Make Title and Progress Bar take up the full width of the row */
+            .manga-row div:first-child {
+                grid-column: span 2;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 5px;
+                margin-bottom: 5px;
+            }
+
+            #manga-list-header {
+                display: none !important;
+            }
+
+            .stat-box {
+                min-width: 100px;
+            }
+        }
     </style>
 </head>
 
 <body oncontextmenu="return false;">
 
     <div class="container">
-        <!-- LIVE CLOCK ADDED HERE -->
         <div id="live-clock" style="font-size: 0.8rem; font-weight: 600; opacity: 0.7; margin-bottom: -15px;"></div>
 
         <nav>
             <div class="logo" onclick="location.reload()">☁️ Manga Tracker</div>
             <div id="nav-links" style="display: flex; align-items: center; gap: 10px;">
                 <button class="btn-outline btn-sm" onclick="toggleTheme()" id="theme-btn">🌙</button>
-
                 <div id="nav-logged-out">
                     <button class="btn-outline" onclick="showView('login')">Login</button>
-                    <button class="btn-primary" onclick="showView('signup')">Sign Up</button>
+                    <button class="btn-primary" onclick="showView('signup')" style="width: auto;">Sign Up</button>
                 </div>
                 <div id="nav-logged-in" class="hidden">
                     <span id="user-display" style="margin-right:10px; font-weight:600"></span>
@@ -257,7 +302,7 @@
                 <div id="tracker-form-card" class="card">
                     <h3 id="form-title">Add New Manga</h3>
                     <input type="text" id="m-title" placeholder="Manga Title">
-                    <input type="url" id="m-image" placeholder="Cover Image URL">
+                    <input type="url" id="m-image" placeholder="Cover Image URL (Optional)">
                     <div style="display: flex; gap: 5px;">
                         <input type="number" id="m-chapter" step="0.1" placeholder="Chapter">
                         <input type="number" id="m-total" placeholder="Total Ch.">
@@ -290,7 +335,7 @@
 
                 <div class="card">
                     <div
-                        style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 10px;">
+                        style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
                         <h3 id="list-heading" style="margin:0">My Manga List</h3>
                         <div style="display:flex; gap:5px">
                             <button id="btn-export" class="btn-outline btn-sm" onclick="exportCSV()">Export</button>
@@ -313,7 +358,8 @@
                         <div>Title & Progress</div>
                         <div>Chapter</div>
                         <div>Status</div>
-                        <div>Rating & Link</div>
+                        <div>Rating</div>
+                        <div>Link</div>
                         <div style="text-align: right;">Action</div>
                     </div>
                     <div id="content-container"></div>
@@ -334,7 +380,6 @@
             let statusFilter = 'All';
 
             window.onload = async () => {
-                // Initialize Clock
                 updateClock();
                 setInterval(updateClock, 1000);
 
@@ -346,13 +391,9 @@
                 sb.auth.onAuthStateChange((_event, session) => handleAuth(session));
             };
 
-            // LIVE CLOCK FUNCTION
             function updateClock() {
                 const now = new Date();
-                const options = {
-                    weekday: 'short', year: 'numeric', month: 'short',
-                    day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
-                };
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
                 document.getElementById('live-clock').textContent = now.toLocaleString('en-US', options);
             }
 
@@ -388,7 +429,6 @@
 
             async function upsertManga() {
                 const title = document.getElementById('m-title').value.trim();
-                const image = document.getElementById('m-image').value.trim();
                 const chapter = parseFloat(document.getElementById('m-chapter').value) || 0;
                 const total = parseInt(document.getElementById('m-total').value) || 0;
                 const rating = parseInt(document.getElementById('m-rating').value) || 0;
@@ -396,7 +436,7 @@
                 const link = document.getElementById('m-link').value.trim();
                 if (!title) return alert("Title is required!");
                 const payload = {
-                    user_id: currentUser.id, title, image_url: image, chapter,
+                    user_id: currentUser.id, title, chapter,
                     total_chapters: total, rating: rating, status, link,
                     updated_at: new Date().toISOString()
                 };
@@ -416,8 +456,8 @@
 
             function timeAgo(date) {
                 const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-                let interval = seconds / 31536000;
-                if (interval > 1) return Math.floor(interval) + "y ago";
+                let interval = seconds / 2592000;
+                if (interval > 1) return Math.floor(interval) + "mo ago";
                 interval = seconds / 86400;
                 if (interval > 1) return Math.floor(interval) + "d ago";
                 interval = seconds / 3600;
@@ -446,17 +486,15 @@
                         progHTML = `<div style="width:100%; background:var(--border); height:4px; border-radius:5px; margin-top:4px; overflow:hidden;"><div style="width:${pct}%; background:var(--primary); height:100%;"></div></div>`;
                     }
                     row.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${m.image_url || 'https://via.placeholder.com/30x45?text=?'}" style="width:30px; height:45px; object-fit:cover; border-radius:3px; background:var(--border);">
-                            <div style="flex:1; overflow:hidden;">
-                                <strong style="display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${m.title}</strong>
-                                <small style="font-size:0.6rem; color:gray;">Updated: ${timeAgo(m.updated_at)}</small>
-                                ${progHTML}
-                            </div>
+                        <div>
+                            <strong style="display:block;">${m.title}</strong>
+                            <small style="font-size:0.6rem; color:gray;">Updated: ${timeAgo(m.updated_at)}</small>
+                            ${progHTML}
                         </div>
                         <div>${m.chapter}${m.total_chapters ? '/' + m.total_chapters : ''}</div>
                         <div><span class="status-pill" style="background:${getStatusColor(m.status)}; color:#000;">${m.status}</span></div>
-                        <div style="font-size:0.85rem;">⭐ ${m.rating || 0} | ${isOwner && m.link ? `<a href="${m.link}" target="_blank">🔗</a>` : (!isOwner ? '🔒' : '')}</div>
+                        <div>⭐ ${m.rating || 0}</div>
+                        <div>${isOwner && m.link ? `<a href="${m.link}" target="_blank">🔗</a>` : (!isOwner ? '🔒' : '--')}</div>
                         <div class="act-c" style="display:flex; gap:5px; justify-content: flex-end;"></div>
                     `;
                     const actC = row.querySelector('.act-c');
@@ -472,7 +510,6 @@
             function editManga(m) {
                 editingId = m.id;
                 document.getElementById('m-title').value = m.title;
-                document.getElementById('m-image').value = m.image_url || "";
                 document.getElementById('m-chapter').value = m.chapter;
                 document.getElementById('m-total').value = m.total_chapters || "";
                 document.getElementById('m-rating').value = m.rating || 0;
@@ -485,7 +522,7 @@
 
             function resetForm() {
                 editingId = null;
-                document.getElementById('m-title').value = ""; document.getElementById('m-image').value = "";
+                document.getElementById('m-title').value = "";
                 document.getElementById('m-chapter').value = ""; document.getElementById('m-total').value = "";
                 document.getElementById('m-rating').value = 0; document.getElementById('m-link').value = "";
                 document.getElementById('form-title').textContent = "Add New Manga";
@@ -505,7 +542,7 @@
             async function handleSignup() { const { error } = await sb.auth.signUp({ email: document.getElementById('signup-email').value, password: document.getElementById('signup-password').value }); if (error) alert(error.message); else alert("Verify email!"); }
             async function handleLogout() { await sb.auth.signOut(); location.reload(); }
             function togglePassword(inputId, btn) { const input = document.getElementById(inputId); if (input.type === "password") { input.type = "text"; btn.textContent = "🔒"; } else { input.type = "password"; btn.textContent = "👁️"; } }
-            document.onkeydown = function (e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) || (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
+            document.onkeydown = function (e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) || (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) || (e.ctrlKey && e.shiftKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
         </script>
 </body>
 
