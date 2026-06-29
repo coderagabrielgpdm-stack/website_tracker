@@ -152,6 +152,41 @@
             margin-bottom: 10px;
             cursor: pointer;
         }
+
+        /* Container for the password field and the eye */
+        .pass-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Ensure the input takes the full width but leaves space for the icon */
+        .pass-wrapper input {
+            padding-right: 40px;
+            /* Space for the eye */
+            margin: 0;
+            /* Align perfectly with wrapper */
+        }
+
+        /* Style for the eye toggle button */
+        .toggle-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .toggle-btn:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -179,14 +214,26 @@
         <div id="view-login" class="card" style="max-width: 400px; margin: 0 auto;">
             <h2>Login</h2>
             <input type="email" id="login-email" placeholder="Email">
-            <input type="password" id="login-password" placeholder="Password">
+
+            <!-- Updated Password Field -->
+            <div class="pass-wrapper" style="margin: 8px 0;">
+                <input type="password" id="login-password" placeholder="Password">
+                <button type="button" class="toggle-btn" onclick="togglePassword('login-password', this)">👁️</button>
+            </div>
+
             <button class="btn-primary" onclick="handleLogin()">Login</button>
         </div>
 
         <div id="view-signup" class="card hidden" style="max-width: 400px; margin: 0 auto;">
             <h2>Create Account</h2>
             <input type="email" id="signup-email" placeholder="Email">
-            <input type="password" id="signup-password" placeholder="Password">
+
+            <!-- Updated Password Field -->
+            <div class="pass-wrapper" style="margin: 8px 0;">
+                <input type="password" id="signup-password" placeholder="Password">
+                <button type="button" class="toggle-btn" onclick="togglePassword('signup-password', this)">👁️</button>
+            </div>
+
             <button class="btn-primary" onclick="handleSignup()">Sign Up</button>
         </div>
 
@@ -446,23 +493,35 @@
             async function handleLogout() { await sb.auth.signOut(); location.reload(); }
 
             document.onkeydown = function (e) {
-                    // Block F12
-                    if (e.keyCode == 123) {
-                        return false;
-                    }
-                    // Block Ctrl+Shift+I (Inspect)
-                    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-                        return false;
-                    }
-                    // Block Ctrl+Shift+J (Console)
-                    if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-                        return false;
-                    }
-                    // Block Ctrl+U (View Source)
-                    if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-                        return false;
-                    }
-                };
+                // Block F12
+                if (e.keyCode == 123) {
+                    return false;
+                }
+                // Block Ctrl+Shift+I (Inspect)
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                    return false;
+                }
+                // Block Ctrl+Shift+J (Console)
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                    return false;
+                }
+                // Block Ctrl+U (View Source)
+                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                    return false;
+                }
+            };
+
+            function togglePassword(inputId, btn) {
+                const input = document.getElementById(inputId);
+
+                if (input.type === "password") {
+                    input.type = "text";
+                    btn.textContent = "🔒"; // Icon for when password is visible
+                } else {
+                    input.type = "password";
+                    btn.textContent = "👁️"; // Icon for when password is hidden
+                }
+            }
         </script>
 </body>
 
