@@ -30,7 +30,6 @@
             margin: 0;
             min-height: 100vh;
             transition: background 0.3s, color 0.3s;
-            /* Smooth transition */
         }
 
         .container {
@@ -129,7 +128,6 @@
 
         .tab-btn {
             background: var(--border);
-            /* Changed to use variable */
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -153,22 +151,17 @@
             cursor: pointer;
         }
 
-        /* Container for the password field and the eye */
         .pass-wrapper {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        /* Ensure the input takes the full width but leaves space for the icon */
         .pass-wrapper input {
             padding-right: 40px;
-            /* Space for the eye */
             margin: 0;
-            /* Align perfectly with wrapper */
         }
 
-        /* Style for the eye toggle button */
         .toggle-btn {
             position: absolute;
             right: 10px;
@@ -187,16 +180,36 @@
         .toggle-btn:hover {
             color: var(--primary);
         }
+
+        .stat-box {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+            border: 2px solid transparent;
+            flex: 1;
+        }
+
+        .stat-box:hover {
+            background: var(--bg);
+        }
+
+        .stat-box.active {
+            border-color: var(--primary);
+            background: var(--bg);
+        }
     </style>
 </head>
 
 <body oncontextmenu="return false;">
 
     <div class="container">
+        <!-- LIVE CLOCK ADDED HERE -->
+        <div id="live-clock" style="font-size: 0.8rem; font-weight: 600; opacity: 0.7; margin-bottom: -15px;"></div>
+
         <nav>
             <div class="logo" onclick="location.reload()">☁️ Manga Tracker</div>
             <div id="nav-links" style="display: flex; align-items: center; gap: 10px;">
-                <!-- THEME TOGGLE BUTTON -->
                 <button class="btn-outline btn-sm" onclick="toggleTheme()" id="theme-btn">🌙</button>
 
                 <div id="nav-logged-out">
@@ -210,51 +223,58 @@
             </div>
         </nav>
 
-        <!-- AUTH VIEWS -->
         <div id="view-login" class="card" style="max-width: 400px; margin: 0 auto;">
             <h2>Login</h2>
             <input type="email" id="login-email" placeholder="Email">
-
-            <!-- Updated Password Field -->
             <div class="pass-wrapper" style="margin: 8px 0;">
                 <input type="password" id="login-password" placeholder="Password">
                 <button type="button" class="toggle-btn" onclick="togglePassword('login-password', this)">👁️</button>
             </div>
-
             <button class="btn-primary" onclick="handleLogin()">Login</button>
         </div>
 
         <div id="view-signup" class="card hidden" style="max-width: 400px; margin: 0 auto;">
             <h2>Create Account</h2>
             <input type="email" id="signup-email" placeholder="Email">
-
-            <!-- Updated Password Field -->
             <div class="pass-wrapper" style="margin: 8px 0;">
                 <input type="password" id="signup-password" placeholder="Password">
                 <button type="button" class="toggle-btn" onclick="togglePassword('signup-password', this)">👁️</button>
             </div>
-
             <button class="btn-primary" onclick="handleSignup()">Sign Up</button>
         </div>
 
-        <!-- DASHBOARD VIEW -->
         <div id="view-dashboard" class="hidden">
             <div class="view-tabs">
                 <div id="tab-my" class="tab-btn active" onclick="switchTab('my')">My Manga List</div>
                 <div id="tab-community" class="tab-btn" onclick="switchTab('community')">Community</div>
             </div>
 
-            <!-- STATUS COUNTERS -->
             <div id="stats-container" class="card"
                 style="display: flex; justify-content: space-around; flex-wrap: wrap; text-align: center; gap: 10px; margin-bottom: 20px;">
-                <!-- Filled dynamically -->
             </div>
 
             <div class="dashboard-layout">
                 <div id="tracker-form-card" class="card">
                     <h3 id="form-title">Add New Manga</h3>
                     <input type="text" id="m-title" placeholder="Manga Title">
-                    <input type="number" id="m-chapter" step="0.1" placeholder="Chapter">
+                    <input type="url" id="m-image" placeholder="Cover Image URL">
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="m-chapter" step="0.1" placeholder="Chapter">
+                        <input type="number" id="m-total" placeholder="Total Ch.">
+                    </div>
+                    <select id="m-rating">
+                        <option value="0">Rating: None</option>
+                        <option value="10">⭐ 10 Masterpiece</option>
+                        <option value="9">⭐ 9 Great</option>
+                        <option value="8">⭐ 8 Very Good</option>
+                        <option value="7">⭐ 7 Good</option>
+                        <option value="6">⭐ 6 Fine</option>
+                        <option value="5">⭐ 5 Average</option>
+                        <option value="4">⭐ 4 Bad</option>
+                        <option value="3">⭐ 3 Very Bad</option>
+                        <option value="2">⭐ 2 Horrible</option>
+                        <option value="1">⭐ 1 Appalling</option>
+                    </select>
                     <input type="url" id="m-link" placeholder="Manga Link (Optional)">
                     <select id="m-status">
                         <option>Reading</option>
@@ -273,16 +293,16 @@
                         style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 10px;">
                         <h3 id="list-heading" style="margin:0">My Manga List</h3>
                         <div style="display:flex; gap:5px">
+                            <button id="btn-export" class="btn-outline btn-sm" onclick="exportCSV()">Export</button>
                             <select id="sort-filter" onchange="renderData()" style="margin:0; width:auto; padding:5px;">
-                                <option value="az">Title A-Z</option>
-                                <option value="za">Title Z-A</option>
                                 <option value="newest">Newest</option>
-                                <option value="ch-low">Chapter: Low-High</option>
-                                <option value="ch-high">Chapter: High-Low</option>
+                                <option value="rating">Rating</option>
+                                <option value="az">A-Z</option>
+                                <option value="za">Z-A</option>
+                                <option value="ch-high">Ch: High-Low</option>
                             </select>
-                            <button id="btn-delete-all" class="btn-outline btn-sm hidden"
-                                style="color: #ef4444; border-color: #fecaca;" onclick="deleteAllManga()">Delete
-                                All</button>
+                            <button id="btn-delete-all" class="btn-outline btn-sm hidden" style="color: #ef4444;"
+                                onclick="deleteAllManga()">Delete All</button>
                             <button id="back-btn" class="btn-outline btn-sm hidden"
                                 onclick="viewingProfileId=null; renderData()">← Back</button>
                         </div>
@@ -290,10 +310,10 @@
                     <input type="text" id="search-bar" placeholder="🔍 Search..." oninput="renderData()">
                     <div id="manga-list-header" class="manga-row"
                         style="font-weight: bold; border-bottom: 2px solid var(--border);" class="hidden">
-                        <div>Title</div>
+                        <div>Title & Progress</div>
                         <div>Chapter</div>
                         <div>Status</div>
-                        <div>Link</div>
+                        <div>Rating & Link</div>
                         <div style="text-align: right;">Action</div>
                     </div>
                     <div id="content-container"></div>
@@ -301,9 +321,7 @@
             </div>
         </div>
 
-
         <script>
-            // 1. DATABASE CONFIG
             const SB_URL = 'https://dauopmsedlmpfngvvvjr.supabase.co';
             const SB_KEY = 'sb_publishable_rjDkxXKdQ3TOF-0vCeQP5g_1-zINEh8';
             const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -313,19 +331,31 @@
             let currentTab = 'my';
             let viewingProfileId = null;
             let editingId = null;
+            let statusFilter = 'All';
 
             window.onload = async () => {
-                // Apply theme on load
+                // Initialize Clock
+                updateClock();
+                setInterval(updateClock, 1000);
+
                 const savedTheme = localStorage.getItem('manga-theme') || 'light';
                 document.body.setAttribute('data-theme', savedTheme);
                 document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-
                 const { data: { session } } = await sb.auth.getSession();
                 if (session) handleAuth(session);
                 sb.auth.onAuthStateChange((_event, session) => handleAuth(session));
             };
 
-            // THEME TOGGLE LOGIC
+            // LIVE CLOCK FUNCTION
+            function updateClock() {
+                const now = new Date();
+                const options = {
+                    weekday: 'short', year: 'numeric', month: 'short',
+                    day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                };
+                document.getElementById('live-clock').textContent = now.toLocaleString('en-US', options);
+            }
+
             function toggleTheme() {
                 const currentTheme = document.body.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -339,8 +369,7 @@
                     currentUser = session.user;
                     document.getElementById('nav-logged-in').classList.remove('hidden');
                     document.getElementById('nav-logged-out').classList.add('hidden');
-                    const shortId = currentUser.id.substring(0, 4);
-                    document.getElementById('user-display').textContent = 'User_' + shortId;
+                    document.getElementById('user-display').textContent = 'User_' + currentUser.id.substring(0, 4);
                     showView('dashboard');
                     fetchData();
                 } else {
@@ -351,177 +380,132 @@
                 }
             }
 
-            async function upsertManga() {
-                const title = document.getElementById('m-title').value.trim();
-                const chapter = parseFloat(document.getElementById('m-chapter').value) || 0;
-                const status = document.getElementById('m-status').value;
-                const link = document.getElementById('m-link').value.trim();
-                if (!title) return alert("Title is required!");
-                const isDuplicate = allMangaData.some(m => m.user_id === currentUser.id && m.title.toLowerCase() === title.toLowerCase() && m.id !== editingId);
-                if (isDuplicate) return alert("Error: Already in list!");
-                const payload = { user_id: currentUser.id, title, chapter, status, link, updated_at: new Date().toISOString() };
-                const { error } = editingId ? await sb.from('manga').update(payload).eq('id', editingId) : await sb.from('manga').insert([payload]);
-                if (error) alert(error.message); else { resetForm(); fetchData(); }
-            }
-
-            async function deleteManga(id) {
-                if (!confirm("Delete this?")) return;
-                await sb.from('manga').delete().eq('id', id);
-                fetchData();
-            }
-
-            async function deleteAllManga() {
-                if (!confirm("Delete ALL?")) return;
-                await sb.from('manga').delete().eq('user_id', currentUser.id);
-                fetchData();
-            }
-
             async function fetchData() {
                 const { data } = await sb.from('manga').select('*');
                 allMangaData = data || [];
                 renderData();
             }
 
-            function renderData() {
-                const container = document.getElementById('content-container');
-                const search = document.getElementById('search-bar').value.toLowerCase();
-                const backBtn = document.getElementById('back-btn');
-                const delAllBtn = document.getElementById('btn-delete-all');
-                const header = document.getElementById('manga-list-header');
-                const sortVal = document.getElementById('sort-filter').value;
-                updateStats();
-                container.innerHTML = "";
-                if (currentTab === 'my') {
-                    document.getElementById('list-heading').textContent = "My Manga List";
-                    backBtn.classList.add('hidden');
-                    delAllBtn.classList.remove('hidden');
-                    header.classList.remove('hidden');
-                    renderMangaList(currentUser.id, search, sortVal);
-                } else {
-                    if (viewingProfileId) {
-                        document.getElementById('list-heading').textContent = "User_" + viewingProfileId.substring(0, 4) + "'s List";
-                        backBtn.classList.remove('hidden');
-                        delAllBtn.classList.add('hidden');
-                        header.classList.remove('hidden');
-                        renderMangaList(viewingProfileId, search, sortVal);
-                    } else {
-                        document.getElementById('list-heading').textContent = "Community Users";
-                        backBtn.classList.add('hidden'); delAllBtn.classList.add('hidden'); header.classList.add('hidden');
-                        renderUserList(search);
-                    }
-                }
+            async function upsertManga() {
+                const title = document.getElementById('m-title').value.trim();
+                const image = document.getElementById('m-image').value.trim();
+                const chapter = parseFloat(document.getElementById('m-chapter').value) || 0;
+                const total = parseInt(document.getElementById('m-total').value) || 0;
+                const rating = parseInt(document.getElementById('m-rating').value) || 0;
+                const status = document.getElementById('m-status').value;
+                const link = document.getElementById('m-link').value.trim();
+                if (!title) return alert("Title is required!");
+                const payload = {
+                    user_id: currentUser.id, title, image_url: image, chapter,
+                    total_chapters: total, rating: rating, status, link,
+                    updated_at: new Date().toISOString()
+                };
+                const { error } = editingId ? await sb.from('manga').update(payload).eq('id', editingId) : await sb.from('manga').insert([payload]);
+                if (error) alert(error.message); else { resetForm(); fetchData(); }
             }
 
-            function renderUserList(search) {
-                const container = document.getElementById('content-container');
-                const usersMap = new Map();
-                allMangaData.forEach(m => {
-                    if (!usersMap.has(m.user_id)) {
-                        usersMap.set(m.user_id, { id: m.user_id, username: "User_" + m.user_id.substring(0, 4), count: allMangaData.filter(x => x.user_id === m.user_id).length });
-                    }
-                });
-                const users = Array.from(usersMap.values()).filter(u => u.username.toLowerCase().includes(search));
-                users.forEach(u => {
-                    const div = document.createElement('div');
-                    div.className = "user-card";
-                    div.innerHTML = `<div><strong>${u.username}</strong><br><small>${u.count} entries</small></div><button class="btn-outline btn-sm">View</button>`;
-                    div.onclick = () => { viewingProfileId = u.id; renderData(); };
-                    container.appendChild(div);
-                });
+            function exportCSV() {
+                const myData = allMangaData.filter(m => m.user_id === currentUser.id);
+                if (myData.length === 0) return alert("No data to export!");
+                let csv = "Title,Chapter,Total,Rating,Status,Link\n";
+                myData.forEach(m => { csv += `"${m.title}",${m.chapter},${m.total_chapters || 0},${m.rating},"${m.status}","${m.link || ''}"\n`; });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = "manga_list.csv"; a.click();
+            }
+
+            function timeAgo(date) {
+                const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+                let interval = seconds / 31536000;
+                if (interval > 1) return Math.floor(interval) + "y ago";
+                interval = seconds / 86400;
+                if (interval > 1) return Math.floor(interval) + "d ago";
+                interval = seconds / 3600;
+                if (interval > 1) return Math.floor(interval) + "h ago";
+                interval = seconds / 60;
+                if (interval > 1) return Math.floor(interval) + "m ago";
+                return "Just now";
             }
 
             function renderMangaList(userId, search, sort) {
                 const container = document.getElementById('content-container');
-                let list = allMangaData.filter(m => m.user_id === userId && m.title.toLowerCase().includes(search));
+                let list = allMangaData.filter(m => m.user_id === userId && m.title.toLowerCase().includes(search) && (statusFilter === 'All' || m.status === statusFilter));
                 if (sort === 'az') list.sort((a, b) => a.title.localeCompare(b.title));
                 else if (sort === 'za') list.sort((a, b) => b.title.localeCompare(a.title));
-                else if (sort === 'ch-low') list.sort((a, b) => a.chapter - b.chapter);
                 else if (sort === 'ch-high') list.sort((a, b) => b.chapter - a.chapter);
+                else if (sort === 'rating') list.sort((a, b) => b.rating - a.rating);
                 else list.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-
                 if (list.length === 0) { container.innerHTML = "<div style='padding:20px; text-align:center;'>Empty</div>"; return; }
                 list.forEach(m => {
                     const isOwner = currentUser && m.user_id === currentUser.id;
                     const row = document.createElement('div');
                     row.className = "manga-row";
-                    row.innerHTML = `<div><strong>${m.title}</strong></div><div>Ch. ${m.chapter}</div><div><span class="status-pill" style="background:${getStatusColor(m.status)}; color:#000;">${m.status}</span></div><div class="link-c"></div><div class="act-c" style="display:flex; gap:5px; justify-content: flex-end;"></div>`;
-                    const linkC = row.querySelector('.link-c');
+                    let progHTML = '';
+                    if (m.total_chapters > 0) {
+                        const pct = Math.min((m.chapter / m.total_chapters) * 100, 100);
+                        progHTML = `<div style="width:100%; background:var(--border); height:4px; border-radius:5px; margin-top:4px; overflow:hidden;"><div style="width:${pct}%; background:var(--primary); height:100%;"></div></div>`;
+                    }
+                    row.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${m.image_url || 'https://via.placeholder.com/30x45?text=?'}" style="width:30px; height:45px; object-fit:cover; border-radius:3px; background:var(--border);">
+                            <div style="flex:1; overflow:hidden;">
+                                <strong style="display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${m.title}</strong>
+                                <small style="font-size:0.6rem; color:gray;">Updated: ${timeAgo(m.updated_at)}</small>
+                                ${progHTML}
+                            </div>
+                        </div>
+                        <div>${m.chapter}${m.total_chapters ? '/' + m.total_chapters : ''}</div>
+                        <div><span class="status-pill" style="background:${getStatusColor(m.status)}; color:#000;">${m.status}</span></div>
+                        <div style="font-size:0.85rem;">⭐ ${m.rating || 0} | ${isOwner && m.link ? `<a href="${m.link}" target="_blank">🔗</a>` : (!isOwner ? '🔒' : '')}</div>
+                        <div class="act-c" style="display:flex; gap:5px; justify-content: flex-end;"></div>
+                    `;
+                    const actC = row.querySelector('.act-c');
                     if (isOwner) {
-                        linkC.innerHTML = m.link ? `<a href="${m.link}" target="_blank">🔗</a>` : `None`;
-                        const actC = row.querySelector('.act-c');
                         const eb = document.createElement('button'); eb.innerHTML = "✏️"; eb.className = "btn-outline btn-sm"; eb.onclick = () => editManga(m);
                         const db = document.createElement('button'); db.innerHTML = "🗑️"; db.className = "btn-outline btn-sm"; db.style.color = "#ef4444"; db.onclick = () => deleteManga(m.id);
                         actC.appendChild(eb); actC.appendChild(db);
-                    } else { linkC.innerHTML = "🔒 Private"; }
+                    } else { actC.innerHTML = "🔒"; }
                     container.appendChild(row);
                 });
             }
 
-            function getStatusColor(s) {
-                if (s === 'Completed') return '#dcfce7';
-                if (s === 'Reading') return '#e0e7ff';
-                if (s === 'On Hold') return '#fef9c3';
-                return '#fee2e2';
+            function editManga(m) {
+                editingId = m.id;
+                document.getElementById('m-title').value = m.title;
+                document.getElementById('m-image').value = m.image_url || "";
+                document.getElementById('m-chapter').value = m.chapter;
+                document.getElementById('m-total').value = m.total_chapters || "";
+                document.getElementById('m-rating').value = m.rating || 0;
+                document.getElementById('m-status').value = m.status;
+                document.getElementById('m-link').value = m.link || "";
+                document.getElementById('form-title').textContent = "Edit Manga";
+                document.getElementById('btn-cancel-edit').classList.remove('hidden');
+                window.scrollTo(0, 0);
             }
 
-            function updateStats() {
-                const statsDiv = document.getElementById('stats-container');
-                if (currentTab === 'community' && !viewingProfileId) { statsDiv.classList.add('hidden'); return; }
-                statsDiv.classList.remove('hidden');
-                const targetId = viewingProfileId || currentUser.id;
-                const myManga = allMangaData.filter(m => m.user_id === targetId);
-                const statuses = ["Reading", "Completed", "On Hold", "Dropped", "Plan to Read"];
-                statsDiv.innerHTML = statuses.map(s => {
-                    const count = myManga.filter(m => m.status === s).length;
-                    return `<div><div style="font-size:1.2rem; font-weight:bold; color:var(--primary)">${count}</div><small>${s}</small></div>`;
-                }).join('');
+            function resetForm() {
+                editingId = null;
+                document.getElementById('m-title').value = ""; document.getElementById('m-image').value = "";
+                document.getElementById('m-chapter').value = ""; document.getElementById('m-total').value = "";
+                document.getElementById('m-rating').value = 0; document.getElementById('m-link').value = "";
+                document.getElementById('form-title').textContent = "Add New Manga";
+                document.getElementById('btn-cancel-edit').classList.add('hidden');
             }
 
-            function switchTab(tab) {
-                currentTab = tab; viewingProfileId = null;
-                document.getElementById('tab-my').classList.toggle('active', tab === 'my');
-                document.getElementById('tab-community').classList.toggle('active', tab === 'community');
-                document.getElementById('tracker-form-card').classList.toggle('hidden', tab === 'community');
-                renderData();
-            }
-
-            function editManga(m) { editingId = m.id; document.getElementById('m-title').value = m.title; document.getElementById('m-chapter').value = m.chapter; document.getElementById('m-status').value = m.status; document.getElementById('m-link').value = m.link || ""; document.getElementById('form-title').textContent = "Edit Manga"; document.getElementById('btn-cancel-edit').classList.remove('hidden'); window.scrollTo(0, 0); }
-            function resetForm() { editingId = null; document.getElementById('m-title').value = ""; document.getElementById('m-chapter').value = ""; document.getElementById('m-link').value = ""; document.getElementById('form-title').textContent = "Add New Manga"; document.getElementById('btn-cancel-edit').classList.add('hidden'); }
+            function setStatusFilter(s) { statusFilter = s; renderData(); }
+            function renderData() { const container = document.getElementById('content-container'); const search = document.getElementById('search-bar').value.toLowerCase(); const backBtn = document.getElementById('back-btn'); const delAllBtn = document.getElementById('btn-delete-all'); const header = document.getElementById('manga-list-header'); const sortVal = document.getElementById('sort-filter').value; updateStats(); container.innerHTML = ""; if (currentTab === 'my') { document.getElementById('list-heading').textContent = "My Manga List"; backBtn.classList.add('hidden'); delAllBtn.classList.remove('hidden'); header.classList.remove('hidden'); renderMangaList(currentUser.id, search, sortVal); } else { if (viewingProfileId) { document.getElementById('list-heading').textContent = "User_" + viewingProfileId.substring(0, 4) + "'s List"; backBtn.classList.remove('hidden'); delAllBtn.classList.add('hidden'); header.classList.remove('hidden'); renderMangaList(viewingProfileId, search, sortVal); } else { document.getElementById('list-heading').textContent = "Community Users"; backBtn.classList.add('hidden'); delAllBtn.classList.add('hidden'); header.classList.add('hidden'); renderUserList(search); } } }
+            function renderUserList(search) { const container = document.getElementById('content-container'); const usersMap = new Map(); allMangaData.forEach(m => { if (!usersMap.has(m.user_id)) { usersMap.set(m.user_id, { id: m.user_id, username: "User_" + m.user_id.substring(0, 4), count: allMangaData.filter(x => x.user_id === m.user_id).length }); } }); Array.from(usersMap.values()).filter(u => u.username.toLowerCase().includes(search)).forEach(u => { const div = document.createElement('div'); div.className = "user-card"; div.innerHTML = `<div><strong>${u.username}</strong><br><small>${u.count} entries</small></div><button class="btn-outline btn-sm">View</button>`; div.onclick = () => { viewingProfileId = u.id; statusFilter = 'All'; renderData(); }; container.appendChild(div); }); }
+            function updateStats() { const statsDiv = document.getElementById('stats-container'); if (currentTab === 'community' && !viewingProfileId) { statsDiv.classList.add('hidden'); return; } statsDiv.classList.remove('hidden'); const targetId = viewingProfileId || currentUser.id; const targetManga = allMangaData.filter(m => m.user_id === targetId); const statuses = ["All", "Reading", "Completed", "On Hold", "Dropped", "Plan to Read"]; statsDiv.innerHTML = statuses.map(s => { const count = s === "All" ? targetManga.length : targetManga.filter(m => m.status === s).length; const activeClass = statusFilter === s ? 'active' : ''; return `<div class="stat-box ${activeClass}" onclick="setStatusFilter('${s}')"><div style="font-size:1.2rem; font-weight:bold; color:var(--primary)">${count}</div><small>${s}</small></div>`; }).join(''); }
+            function getStatusColor(s) { if (s === 'Completed') return '#dcfce7'; if (s === 'Reading') return '#e0e7ff'; if (s === 'On Hold') return '#fef9c3'; return '#fee2e2'; }
+            function switchTab(tab) { currentTab = tab; viewingProfileId = null; statusFilter = 'All'; document.getElementById('tab-my').classList.toggle('active', tab === 'my'); document.getElementById('tab-community').classList.toggle('active', tab === 'community'); document.getElementById('tracker-form-card').classList.toggle('hidden', tab === 'community'); renderData(); }
+            async function deleteManga(id) { if (!confirm("Delete this?")) return; await sb.from('manga').delete().eq('id', id); fetchData(); }
+            async function deleteAllManga() { if (!confirm("Delete ALL?")) return; await sb.from('manga').delete().eq('user_id', currentUser.id); fetchData(); }
             function showView(v) { ['login', 'signup', 'dashboard'].forEach(id => document.getElementById('view-' + id).classList.add('hidden')); document.getElementById('view-' + v).classList.remove('hidden'); }
             async function handleLogin() { const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value }); if (error) alert(error.message); }
             async function handleSignup() { const { error } = await sb.auth.signUp({ email: document.getElementById('signup-email').value, password: document.getElementById('signup-password').value }); if (error) alert(error.message); else alert("Verify email!"); }
             async function handleLogout() { await sb.auth.signOut(); location.reload(); }
-
-            document.onkeydown = function (e) {
-                // Block F12
-                if (e.keyCode == 123) {
-                    return false;
-                }
-                // Block Ctrl+Shift+I (Inspect)
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-                    return false;
-                }
-                // Block Ctrl+Shift+J (Console)
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-                    return false;
-                }
-                // Block Ctrl+U (View Source)
-                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-                    return false;
-                }
-            };
-
-            function togglePassword(inputId, btn) {
-                const input = document.getElementById(inputId);
-
-                if (input.type === "password") {
-                    input.type = "text";
-                    btn.textContent = "🔒"; // Icon for when password is visible
-                } else {
-                    input.type = "password";
-                    btn.textContent = "👁️"; // Icon for when password is hidden
-                }
-            }
+            function togglePassword(inputId, btn) { const input = document.getElementById(inputId); if (input.type === "password") { input.type = "text"; btn.textContent = "🔒"; } else { input.type = "password"; btn.textContent = "👁️"; } }
+            document.onkeydown = function (e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) || (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
         </script>
 </body>
 
