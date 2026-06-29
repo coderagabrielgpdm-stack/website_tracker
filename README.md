@@ -1,2 +1,2 @@
-# website_tracker
+# manga_tracker
 
